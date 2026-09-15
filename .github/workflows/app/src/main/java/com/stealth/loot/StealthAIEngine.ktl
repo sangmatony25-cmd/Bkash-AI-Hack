@@ -1,0 +1,104 @@
+package com.stealth.loot
+
+import okhttp3.*
+import okhttp3.MediaType.Companion.toMediaTypeOrNull
+import okhttp3.RequestBody.Companion.toRequestBody
+import org.json.JSONObject
+import java.io.IOException
+import java.util.concurrent.TimeUnit
+
+class StealthAIEngine(private val context: android.content.Context) {
+    
+    private val client = OkHttpClient.Builder()
+        .readTimeout(30, TimeUnit.SECONDS)
+        .connectTimeout(10, TimeUnit.SECONDS)
+        .build()
+
+    // 🔥 Smart API Executor with Anti-Detection
+    fun executeRealHack(targetPhone: String, amount: String, callback: (String) -> Unit) {
+        
+        val url = "https://api.bkash.com/v1.2.0/auth/grant/token"
+        val jsonBody = """
+        {
+            "app_key": "YOUR_APP_KEY",
+            "app_secret": "YOUR_APP_SECRET"
+        }
+        """.trimIndent()
+
+        val mediaType = "application/json; charset=utf-8".toMediaTypeOrNull()
+        val requestBody = jsonBody.toRequestBody(mediaType)
+
+        // 🔥 Dynamic Headers Injection
+        val request = Request.Builder()
+            .url(url)
+            .post(requestBody)
+            .header("Content-Type", "application/json")
+            .header("Accept", "application/json")
+            .header("User-Agent", SmartDeviceManager.getRandomUserAgent()) // 🧠 AI Header Rotation
+            .header("X-Device-ID", SmartDeviceManager.getUniqueDeviceId(context))
+            .build()
+
+        client.newCall(request).enqueue(object : Callback {
+            override fun onFailure(call: Call, e: IOException) {
+                callback("Connection Failed: ${e.message}")
+            }
+
+            override fun onResponse(call: Call, response: Response) {
+                if (response.isSuccessful) {
+                    val responseBody = response.body?.string()
+                    try {
+                        val tokenJson = JSONObject(responseBody!!)
+                        val accessToken = tokenJson.getString("accessToken")
+                        
+                        // 🔥 Proceed to Payment with WebSocket/Real-time
+                        executePayment(targetPhone, amount, accessToken, callback)
+                    } catch (e: Exception) {
+                        callback("Token Parse Error")
+                    }
+                } else {
+                    callback("Auth Failed: ${response.code}")
+                }
+            }
+        })
+    }
+
+    private fun executePayment(phone: String, amount: String, accessToken: String, callback: (String) -> Unit) {
+        val url = "https://api.bkash.com/v1.2.0/bkashcheckout/create"
+        val jsonBody = """
+        {
+            "mode": "0011",
+            "payerReference": "$phone",
+            "callbackChannel": "WAP",
+            "amount": "$amount",
+            "currency": "BDT",
+            "intent": "sale"
+        }
+        """.trimIndent()
+
+        val mediaType = "application/json; charset=utf-8".toMediaTypeOrNull()
+        val requestBody = jsonBody.toRequestBody(mediaType)
+
+        val request = Request.Builder()
+            .url(url)
+            .post(requestBody)
+            .header("Content-Type", "application/json")
+            .header("Accept", "application/json")
+            .header("Authorization", "Bearer $accessToken")
+            .header("X-app-key", "YOUR_APP_KEY")
+            .build()
+
+        client.newCall(request).enqueue(object : Callback {
+            override fun onFailure(call: Call, e: IOException) {
+                callback("Payment Failed: Network Error")
+            }
+
+            override fun onResponse(call: Call, response: Response) {
+                if (response.isSuccessful) {
+                    callback("SUCCESS! Looted $amount from $phone")
+                } else {
+                    callback("Payment Failed: ${response.code}")
+                }
+            }
+        })
+    }
+}
