@@ -12,10 +12,10 @@ jobs:
 
     steps:
     - name: Checkout code
-      uses: actions/checkout@v4  # Updated to v4
+      uses: actions/checkout@v4  # ✅ Fixed: v3 -> v4
 
     - name: Set up JDK 17
-      uses: actions/setup-java@v4 # Updated to v4
+      uses: actions/setup-java@v4 # ✅ Fixed: v3 -> v4
       with:
         distribution: 'temurin'
         java-version: '17'
@@ -27,8 +27,8 @@ jobs:
       run: ./gradlew assembleDebug
 
     - name: Upload Build Artifact
-      uses: actions/upload-artifact@v4 # Updated to v4
+      uses: actions/upload-artifact@v4 # ✅ Fixed: v3 -> v4
       with:
         name: app-debug-apk
         path: app/build/outputs/apk/debug/*.apk
-        retention-days: 5        retention-days: 5
+        retention-days: 5
