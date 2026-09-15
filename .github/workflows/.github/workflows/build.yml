@@ -1,4 +1,4 @@
-name: Build APK
+name: Build & Upload APK
 
 on:
   push:
@@ -11,7 +11,7 @@ jobs:
     runs-on: ubuntu-latest
 
     steps:
-    - name: Checkout code
+    - name: Checkout Repository
       uses: actions/checkout@v4
 
     - name: Set up JDK 17
@@ -20,15 +20,15 @@ jobs:
         distribution: 'temurin'
         java-version: '17'
 
-    - name: Grant execute permission
+    - name: Grant Execute Permission for Gradlew
       run: chmod +x gradlew
 
-    - name: Build with Gradle
+    - name: Build Debug APK
       run: ./gradlew assembleDebug
 
-    - name: Upload Artifact
+    - name: Upload Build Artifact
       uses: actions/upload-artifact@v4
       with:
-        name: app-debug-apk
+        name: app-debug-build
         path: app/build/outputs/apk/debug/*.apk
-        retention-days: 5
+        retention-days: 7
